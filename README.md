@@ -7,7 +7,7 @@ PhysiSync is a neuro-symbolic "Prompt-to-Sim" system built for the IISc Artpark 
 1. **LLM Parser (`agents/llm_parser.py`)**
    - Uses Gemini (`gemini-2.5-flash`) to map a prompt like  
      "Simulate a 10cm aluminum cube at 400 Kelvin"  
-     into a structured `SimulationManifest` (material, temperature, geometry, intuitive target temperature).
+     into a structured `SimulationManifest` (domain, material, temperature, geometry, intuitive target temperature).
    - Enforces supported materials using `core/constants.py`.
    - Ensures a meaningful `target_prediction`; falls back to `temp_k` if the model fails to provide one.
 
@@ -37,7 +37,8 @@ PhysiSync is a neuro-symbolic "Prompt-to-Sim" system built for the IISc Artpark 
      - Prompt input and material selection.
      - Stepwise "Physics Workings" log.
      - Plotly 3D surface of the temperature field.
-     - Physics Gap metrics + gauge + qualitative interpretation (high / medium / low trust).
+      - Physics Gap metrics + gauge + qualitative interpretation (high / medium / low trust).
+      - A "Reasoning Pipeline" tab that visualizes how human intent is translated into a simulation workflow for each domain.
 
 ### Installation
 
@@ -61,10 +62,12 @@ python -m streamlit run app.py
 
 Then open the local URL shown in the terminal (typically `http://localhost:8501`).
 
-### How this addresses the "LLM Physics Gap"
+### How this addresses the challenge brief
 
+- **Translate human intent into simulation workflows**: The LLM parser takes ambiguous natural language and turns it into a structured manifest plus a staged simulation pipeline, different for heat diffusion vs. conceptual fluid/structural domains.
 - **Neuro-symbolic validation**: Every LLM proposal passes through explicit symbolic and unit-aware checks before any simulation runs.
-- **Ground truth via simulation**: A finite-difference solver provides a numerical reference, not just heuristic reasoning.
+- **Ground truth via simulation**: A finite-difference solver provides a numerical reference, not just heuristic reasoning, for the heat-diffusion domain.
 - **Gap scoring**: The Physics Reliability Score quantifies how much the LLM "hallucinated" relative to the PDE solution.
-- **Transparent reasoning**: The UI surfaces the full physics reasoning chain (constraints, formulas, and checks) so judges can see exactly how language, symbols, and numbers interact.
+- **Transparent reasoning**: The UI surfaces the reasoning chain and the domain-specific pipeline so judges can see how language, symbols, and numbers interact to produce simulations and design insights.
+
 

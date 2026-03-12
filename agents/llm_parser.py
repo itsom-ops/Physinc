@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import Dict
+from typing import Dict, Literal
 
 import requests
 from pydantic import BaseModel, Field, ValidationError, validator
@@ -24,6 +24,10 @@ class SimulationManifest(BaseModel):
     Structured representation of a simulation request.
     """
 
+    domain: Literal["heat_diffusion", "conceptual_fluid", "conceptual_structural"] = Field(
+        "heat_diffusion",
+        description="Simulation domain: heat_diffusion, conceptual_fluid, or conceptual_structural.",
+    )
     material: str = Field(..., description="Name of the material, e.g. 'aluminum'.")
     temp_k: float = Field(
         ..., description="Initial or characteristic temperature in Kelvin."
@@ -85,10 +89,11 @@ class LLMParser:
         """
         return MATERIAL_DATABASE[manifest.material]
 
-    def _build_prompt(self, user_prompt: str) -> str:
+    def _build_prompt(self, user_prompt: str, domain: str) -> str:
         supported_materials = ", ".join(MATERIAL_DATABASE.keys())
         schema_description = json.dumps(
             {
+                "domain": "string, one of: heat_diffusion, conceptual_fluid, conceptual_structural",
                 "material": "string, one of: " + supported_materials,
                 "temp_k": "float, temperature in Kelvin",
                 "dimensions": {
@@ -101,13 +106,17 @@ class LLMParser:
             indent=2,
         )
         return (
-            "You are an expert computational physicist helping to configure a heat "
-            "diffusion simulation.\n\n"
+            "You are an expert computational physicist and simulation engineer. "
+            "Your job is to translate a natural language engineering request into "
+            "a structured simulation manifest.\n\n"
             "Task:\n"
             f"- Read the user's request and emit a SINGLE JSON object that conforms to "
             "the schema below.\n"
             "- Interpret any centimeter dimensions and convert them to meters.\n"
-            f"- The `material` field MUST be one of: {supported_materials}.\n\n"
+            f"- The `material` field MUST be one of: {supported_materials}.\n"
+            "- The `domain` field MUST be one of: "
+            "'heat_diffusion', 'conceptual_fluid', 'conceptual_structural'.\n"
+            f"- Prefer the domain '{domain}' when it matches the user's intent.\n\n"
             "JSON schema (described in natural language):\n"
             f"{schema_description}\n\n"
             "User request:\n"
@@ -157,12 +166,15 @@ class LLMParser:
 
         return text
 
-    def parse(self, user_prompt: str) -> SimulationManifest:
+    def parse(self, user_prompt: str, domain: str = "heat_diffusion") -> SimulationManifest:
         """
         Parse a natural-language prompt into a `SimulationManifest` using Gemini.
         """
-        logger.info("Parsing user prompt into SimulationManifest via Gemini HTTP API.")
-        prompt = self._build_prompt(user_prompt)
+        logger.info(
+            "Parsing user prompt into SimulationManifest via Gemini HTTP API for domain '%s'.",
+            domain,
+        )
+        prompt = self._build_prompt(user_prompt, domain=domain)
 
         raw_text = self._call_gemini(prompt)
         logger.debug("Raw Gemini response text: %s", raw_text)
