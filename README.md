@@ -14,7 +14,7 @@ PhysiSync is a neuro-symbolic "Prompt-to-Sim" system built for the IISc Artpark 
 2. **Physics Validator (`core/physics_validator.py`) – Neuro-symbolic guardrail**
    - Uses **Pint** for unit-aware checks (Kelvin, meters, volume).
    - Uses **SymPy** for a symbolic check of thermal diffusivity  
-     \\( \alpha = \frac{k}{\rho C_p} \\) with material parameters from `constants.py`.
+     $\alpha = \frac{k}{\rho C_p}$ with material parameters from `constants.py`.
    - Verifies:
      - Temperature is below the material’s melting point.
      - All geometric dimensions are positive.
