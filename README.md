@@ -23,7 +23,7 @@ PhysiSync is a neuro-symbolic "Prompt-to-Sim" system built for the IISc Artpark 
 
 3. **Numerical Solver (`simulation/heat_solver.py`)**
    - 2D explicit finite-difference heat equation solver:
-     \\( \partial_t u = \alpha \nabla^2 u \\).
+      $\partial_t u = \alpha \nabla^2 u$ 
    - Builds a grid from the manifest’s geometry, applies simple boundary conditions, and marches in time under a CFL stability constraint.
    - Returns the full temperature field and the simulated maximum temperature.
 
