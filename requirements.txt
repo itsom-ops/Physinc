@@ -1,0 +1,9 @@
+python-dotenv
+requests
+pint
+sympy
+scipy
+numpy
+plotly
+streamlit
+pydantic
